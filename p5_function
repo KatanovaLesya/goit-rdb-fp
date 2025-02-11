@@ -1,0 +1,62 @@
+1) Створення власної SQL-функції для підрахунку різниці в роках
+
+DELIMITER $$
+
+CREATE FUNCTION year_difference(input_year INT) RETURNS INT
+DETERMINISTIC
+BEGIN
+    DECLARE first_january DATE;
+    DECLARE difference INT;
+    
+    SET first_january = STR_TO_DATE(CONCAT(input_year, '-01-01'), '%Y-%m-%d');
+    
+    SET difference = TIMESTAMPDIFF(YEAR, first_january, CURDATE());
+    
+    RETURN difference;
+END$$
+
+DELIMITER ;
+
+2) Перевірка функції:
+
+SELECT year_difference(1996) AS difference;
+
+
+3) Використання функції у запиті:
+
+SELECT 
+    `Year`,
+    year_difference(`Year`) AS year_difference
+FROM infectious_cases
+LIMIT 10;
+
+4) Обчислення захворювань за період:
+
+DELIMITER $$
+
+CREATE FUNCTION disease_per_period(yearly_cases INT, period INT) RETURNS DECIMAL(10,2)
+DETERMINISTIC
+BEGIN
+    -- Якщо значення NULL або порожнє, повертаємо NULL
+    IF yearly_cases IS NULL OR yearly_cases = '' THEN
+        RETURN NULL;
+    END IF;
+
+    -- Ділимо кількість захворювань на заданий період (місяць, квартал, півріччя)
+    RETURN yearly_cases / period;
+END $$
+
+DELIMITER ;
+
+SHOW FUNCTION STATUS WHERE Db = 'pandemic';
+
+SELECT 
+    `Year`,
+    Number_rabies,
+    disease_per_period(Number_rabies, 12) AS rabies_per_month,  
+    disease_per_period(Number_rabies, 4) AS rabies_per_quarter  
+FROM infectious_cases
+WHERE Number_rabies IS NOT NULL AND Number_rabies != ''
+LIMIT 10;
+
+

@@ -1,0 +1,54 @@
+1) Таблиця з країнами:
+
+CREATE TABLE countries (
+    country_id INT AUTO_INCREMENT PRIMARY KEY,
+    Entity VARCHAR(255) UNIQUE NOT NULL,
+    Code VARCHAR(10) UNIQUE
+);
+
+INSERT INTO countries (Entity, Code)
+SELECT DISTINCT Entity, Code FROM infectious_cases;
+
+SELECT * FROM pandemic.countries;
+
+2) Таблиця з медичними кейсами нормалізована:
+
+CREATE TABLE infectious_cases_normalized (
+    case_id INT AUTO_INCREMENT PRIMARY KEY,
+    country_id INT,
+    Year INT,
+    Number_yaws INT,
+    polio_cases INT,
+    cases_guinea_worm INT,
+    Number_rabies INT,
+    Number_malaria INT,
+    Number_hiv INT,
+    Number_tuberculosis INT,
+    Number_smallpox INT,
+    Number_cholera_cases INT,
+    FOREIGN KEY (country_id) REFERENCES countries(country_id)
+);
+
+INSERT INTO infectious_cases_normalized (
+    country_id, Year, Number_yaws, polio_cases, cases_guinea_worm,
+    Number_rabies, Number_malaria, Number_hiv, Number_tuberculosis, 
+    Number_smallpox, Number_cholera_cases
+)
+SELECT 
+    c.country_id, 
+    ic.Year, 
+    IFNULL(NULLIF(ic.Number_yaws, ''), 0),  
+    IFNULL(NULLIF(ic.polio_cases, ''), 0), 
+    IFNULL(NULLIF(ic.cases_guinea_worm, ''), 0),
+    IFNULL(NULLIF(ic.Number_rabies, ''), 0), 
+    IFNULL(NULLIF(ic.Number_malaria, ''), 0), 
+    IFNULL(NULLIF(ic.Number_hiv, ''), 0), 
+    IFNULL(NULLIF(ic.Number_tuberculosis, ''), 0), 
+    IFNULL(NULLIF(ic.Number_smallpox, ''), 0), 
+    IFNULL(NULLIF(ic.Number_cholera_cases, ''), 0)
+FROM infectious_cases ic
+JOIN countries c ON ic.Entity = c.Entity;
+
+SELECT * FROM pandemic.infectious_cases_normalized;
+
+

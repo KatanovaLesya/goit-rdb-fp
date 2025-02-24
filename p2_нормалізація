@@ -51,4 +51,9 @@ JOIN countries c ON ic.Entity = c.Entity;
 
 SELECT * FROM pandemic.infectious_cases_normalized;
 
+2.1) Порахувати записи:
+
+SELECT COUNT(*) FROM infectious_cases_normalized;
+
+
 
